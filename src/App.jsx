@@ -3,78 +3,67 @@ import './App.css'
 import MotorDetailsForm from './components/MotorDetailsForm'
 import MotorTestForm from './components/MotorTestForm'
 import MotorList from './components/MotorList'
+import {
+  subscribeToMotors,
+  createMotor as createMotorInDB,
+  addTestData as addTestDataToDB,
+  deleteTestData as deleteTestDataFromDB,
+  deleteMotor as deleteMotorFromDB
+} from './services/motorService'
 
 function App() {
   const [motors, setMotors] = useState([])
   const [currentMotor, setCurrentMotor] = useState(null)
   const [showNewMotorForm, setShowNewMotorForm] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  // Load data from localStorage on mount
+  // Subscribe to Firebase real-time updates
   useEffect(() => {
-    const savedMotors = localStorage.getItem('motors')
-    if (savedMotors) {
-      setMotors(JSON.parse(savedMotors))
-    }
-  }, [])
+    const unsubscribe = subscribeToMotors((updatedMotors) => {
+      setMotors(updatedMotors)
+      setLoading(false)
 
-  // Save data to localStorage whenever motors changes
-  useEffect(() => {
-    if (motors.length > 0) {
-      localStorage.setItem('motors', JSON.stringify(motors))
-    }
-  }, [motors])
-
-  const handleCreateMotor = (motorDetails) => {
-    const newMotor = {
-      id: Date.now(),
-      createdAt: new Date().toISOString(),
-      ...motorDetails,
-      testData: []
-    }
-    setMotors([newMotor, ...motors])
-    setCurrentMotor(newMotor)
-    setShowNewMotorForm(false)
-  }
-
-  const handleAddTestData = (testData) => {
-    const updatedMotors = motors.map(motor => {
-      if (motor.id === currentMotor.id) {
-        const newTest = {
-          id: Date.now(),
-          timestamp: new Date().toISOString(),
-          ...testData
-        }
-        return {
-          ...motor,
-          testData: [...motor.testData, newTest]
+      // Update currentMotor if it's being viewed
+      if (currentMotor) {
+        const updated = updatedMotors.find(m => m.id === currentMotor.id)
+        if (updated) {
+          setCurrentMotor(updated)
         }
       }
-      return motor
     })
 
-    setMotors(updatedMotors)
+    // Cleanup subscription on unmount
+    return () => unsubscribe()
+  }, [currentMotor])
 
-    // Update current motor reference
-    const updated = updatedMotors.find(m => m.id === currentMotor.id)
-    setCurrentMotor(updated)
+  const handleCreateMotor = async (motorDetails) => {
+    try {
+      const newMotor = await createMotorInDB(motorDetails)
+      setCurrentMotor(newMotor)
+      setShowNewMotorForm(false)
+    } catch (error) {
+      console.error('Error creating motor:', error)
+      alert('Failed to create motor. Please try again.')
+    }
   }
 
-  const handleDeleteTestData = (motorId, testId) => {
-    const updatedMotors = motors.map(motor => {
-      if (motor.id === motorId) {
-        return {
-          ...motor,
-          testData: motor.testData.filter(test => test.id !== testId)
-        }
-      }
-      return motor
-    })
+  const handleAddTestData = async (testData) => {
+    try {
+      await addTestDataToDB(currentMotor.id, testData)
+      // Firebase real-time listener will update the state automatically
+    } catch (error) {
+      console.error('Error adding test data:', error)
+      alert('Failed to add test data. Please try again.')
+    }
+  }
 
-    setMotors(updatedMotors)
-
-    if (currentMotor && currentMotor.id === motorId) {
-      const updated = updatedMotors.find(m => m.id === motorId)
-      setCurrentMotor(updated)
+  const handleDeleteTestData = async (motorId, testId) => {
+    try {
+      await deleteTestDataFromDB(motorId, testId)
+      // Firebase real-time listener will update the state automatically
+    } catch (error) {
+      console.error('Error deleting test data:', error)
+      alert('Failed to delete test data. Please try again.')
     }
   }
 
@@ -86,13 +75,17 @@ function App() {
     setCurrentMotor(null)
   }
 
-  const handleDeleteMotor = (motorId) => {
-    const updatedMotors = motors.filter(motor => motor.id !== motorId)
-    setMotors(updatedMotors)
-    localStorage.setItem('motors', JSON.stringify(updatedMotors))
+  const handleDeleteMotor = async (motorId) => {
+    try {
+      await deleteMotorFromDB(motorId)
+      // Firebase real-time listener will update the state automatically
 
-    if (currentMotor && currentMotor.id === motorId) {
-      setCurrentMotor(null)
+      if (currentMotor && currentMotor.id === motorId) {
+        setCurrentMotor(null)
+      }
+    } catch (error) {
+      console.error('Error deleting motor:', error)
+      alert('Failed to delete motor. Please try again.')
     }
   }
 
@@ -104,7 +97,11 @@ function App() {
       </header>
 
       <main className="app-main">
-        {!currentMotor ? (
+        {loading ? (
+          <div style={{ textAlign: 'center', padding: '2rem' }}>
+            <p>Loading motors...</p>
+          </div>
+        ) : !currentMotor ? (
           <>
             <div className="action-section">
               <button
