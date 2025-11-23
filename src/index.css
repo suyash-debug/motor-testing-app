@@ -1,0 +1,66 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  line-height: 1.6;
+  font-weight: 400;
+
+  /* Gati Drives inspired color palette */
+  --bg-primary: #fffef9;         /* Golden white background */
+  --bg-secondary: #ffffff;       /* Pure white for cards */
+  --bg-tertiary: #faf8f0;        /* Light golden tint */
+  --text-primary: #2D3142;       /* Primary dark blue-gray */
+  --text-secondary: #5a5f72;     /* Muted primary */
+  --text-light: #8a8f9e;         /* Light gray */
+  --border-color: #ebe8db;       /* Subtle golden border */
+  --accent-color: #E8867C;       /* Coral - primary accent */
+  --accent-hover: #e56e63;       /* Darker coral */
+  --accent-secondary: #9BC4BC;   /* Sage green */
+  --accent-gold: #E5B881;        /* Gold accent */
+  --shadow-light: 0 1px 3px rgba(45, 49, 66, 0.08);
+  --shadow-medium: 0 4px 6px rgba(45, 49, 66, 0.1);
+  --danger-color: #e56e63;
+
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  outline: none;
+}
+
+input, textarea {
+  font-family: inherit;
+}
