@@ -8,8 +8,10 @@ import {
   createMotor as createMotorInDB,
   addTestData as addTestDataToDB,
   deleteTestData as deleteTestDataFromDB,
-  deleteMotor as deleteMotorFromDB
+  deleteMotor as deleteMotorFromDB,
+  updateMotor as updateMotorInDB
 } from './services/motorService'
+import { uploadMotorImage } from './services/imageService'
 
 function App() {
   const [motors, setMotors] = useState([])
@@ -38,7 +40,26 @@ function App() {
 
   const handleCreateMotor = async (motorDetails) => {
     try {
-      const newMotor = await createMotorInDB(motorDetails)
+      const { photoFile, ...motorData } = motorDetails
+
+      // Create motor first to get the ID
+      const newMotor = await createMotorInDB(motorData)
+
+      // Upload photo if provided
+      if (photoFile) {
+        try {
+          const photoData = await uploadMotorImage(photoFile, newMotor.id)
+          // Update motor with photo URL and path
+          await updateMotorInDB(newMotor.id, {
+            photoUrl: photoData.url,
+            photoPath: photoData.path
+          })
+        } catch (photoError) {
+          console.error('Error uploading photo:', photoError)
+          // Continue even if photo upload fails
+        }
+      }
+
       setCurrentMotor(newMotor)
       setShowNewMotorForm(false)
     } catch (error) {
