@@ -8,7 +8,8 @@ function MotorTestForm({ motor, onSubmit, onDeleteTest }) {
     rpm: '',
     current: '',
     powerFactor: '',
-    wattage: ''
+    wattage: '',
+    airSpeed: ''
   })
 
   const [isEditing, setIsEditing] = useState(false)
@@ -35,26 +36,34 @@ function MotorTestForm({ motor, onSubmit, onDeleteTest }) {
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    // Validate that all fields are filled
+    // Validate that all required fields are filled
     if (!formData.rpm || !formData.current || !formData.powerFactor || !formData.wattage) {
-      alert('Please fill in all fields')
+      alert('Please fill in all required fields')
       return
     }
 
     // Submit the data
-    onSubmit({
+    const testData = {
       rpm: parseFloat(formData.rpm),
       current: parseFloat(formData.current),
       powerFactor: parseFloat(formData.powerFactor),
       wattage: parseFloat(formData.wattage)
-    })
+    }
+
+    // Add air speed if provided
+    if (formData.airSpeed) {
+      testData.airSpeed = parseFloat(formData.airSpeed)
+    }
+
+    onSubmit(testData)
 
     // Reset form
     setFormData({
       rpm: '',
       current: '',
       powerFactor: '',
-      wattage: ''
+      wattage: '',
+      airSpeed: ''
     })
   }
 
@@ -472,6 +481,22 @@ function MotorTestForm({ motor, onSubmit, onDeleteTest }) {
             </div>
           </div>
 
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="airSpeed">Air Speed (m/s)</label>
+              <input
+                type="number"
+                id="airSpeed"
+                name="airSpeed"
+                value={formData.airSpeed}
+                onChange={handleChange}
+                placeholder="Meters per second"
+                step="0.01"
+                min="0"
+              />
+            </div>
+          </div>
+
           <button type="submit" className="submit-btn">
             + Add Test Point
           </button>
@@ -497,6 +522,7 @@ function MotorTestForm({ motor, onSubmit, onDeleteTest }) {
                   <th>Current (A)</th>
                   <th>Power Factor</th>
                   <th>Wattage (W)</th>
+                  <th>Air Speed (m/s)</th>
                   <th></th>
                 </tr>
               </thead>
@@ -509,6 +535,7 @@ function MotorTestForm({ motor, onSubmit, onDeleteTest }) {
                     <td>{test.current.toFixed(2)}</td>
                     <td>{test.powerFactor.toFixed(2)}</td>
                     <td>{test.wattage.toFixed(2)}</td>
+                    <td>{test.airSpeed ? test.airSpeed.toFixed(2) : '-'}</td>
                     <td>
                       <button
                         onClick={() => onDeleteTest(motor.id, test.id)}
