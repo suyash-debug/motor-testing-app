@@ -56,6 +56,12 @@ function MotorList({ motors, onSelectMotor, onDeleteMotor }) {
                 <span className="detail-label">Magnet:</span>
                 <span className="detail-value">{motor.magnetType}</span>
               </div>
+              {motor.bladeType && (
+                <div className="detail-row">
+                  <span className="detail-label">Blade:</span>
+                  <span className="detail-value">{motor.bladeType}</span>
+                </div>
+              )}
               <div className="detail-row">
                 <span className="detail-label">Created:</span>
                 <span className="detail-value">{formatDate(motor.createdAt)}</span>
