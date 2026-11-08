@@ -1,6 +1,8 @@
 import './MotorList.css'
 
-function MotorList({ motors, onSelectMotor, onDeleteMotor }) {
+const SEARCH_FIELDS = ['partNumber', 'bladeType', 'windingType', 'windingTurns', 'magnetType', 'notes']
+
+function MotorList({ motors, searchQuery, onSearchChange, onSelectMotor, onDeleteMotor }) {
   const formatDate = (isoString) => {
     const date = new Date(isoString)
     return date.toLocaleDateString('en-US', {
@@ -21,11 +23,39 @@ function MotorList({ motors, onSelectMotor, onDeleteMotor }) {
     )
   }
 
+  // Every word must appear somewhere in the motor's fields, e.g. "crompton 29"
+  const terms = searchQuery.toLowerCase().split(/\s+/).filter(Boolean)
+  const filteredMotors = motors.filter((motor) => {
+    const text = SEARCH_FIELDS.map((field) => motor[field] ?? '').join(' ').toLowerCase()
+    return terms.every((term) => text.includes(term))
+  })
+
   return (
     <div className="motor-list-container">
-      <h2>All Motors ({motors.length})</h2>
+      <h2>
+        {terms.length > 0
+          ? `Motors (${filteredMotors.length} of ${motors.length})`
+          : `All Motors (${motors.length})`}
+      </h2>
+      <div className="motor-search">
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder="Search part number, blade, winding, turns, notes…"
+          aria-label="Search motors"
+        />
+        {searchQuery && (
+          <button onClick={() => onSearchChange('')} className="clear-search-btn">
+            Clear
+          </button>
+        )}
+      </div>
+      {filteredMotors.length === 0 && (
+        <p className="no-results">No motors match "{searchQuery}"</p>
+      )}
       <div className="motor-grid">
-        {motors.map((motor) => (
+        {filteredMotors.map((motor) => (
           <div key={motor.id} className="motor-card">
             <div className="motor-card-header">
               <h3>{motor.partNumber}</h3>

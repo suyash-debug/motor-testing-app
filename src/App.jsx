@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import './App.css'
 import MotorDetailsForm from './components/MotorDetailsForm'
 import MotorTestForm from './components/MotorTestForm'
@@ -18,6 +18,15 @@ function App() {
   const [currentMotor, setCurrentMotor] = useState(null)
   const [showNewMotorForm, setShowNewMotorForm] = useState(false)
   const [loading, setLoading] = useState(true)
+  const [searchQuery, setSearchQuery] = useState('')
+  const listScrollY = useRef(0)
+
+  // Return to where the user was in the list after leaving a motor
+  useLayoutEffect(() => {
+    if (!currentMotor) {
+      window.scrollTo(0, listScrollY.current)
+    }
+  }, [currentMotor])
 
   // Subscribe to Firebase real-time updates
   useEffect(() => {
@@ -89,7 +98,9 @@ function App() {
   }
 
   const handleSelectMotor = (motor) => {
+    listScrollY.current = window.scrollY
     setCurrentMotor(motor)
+    window.scrollTo(0, 0)
   }
 
   const handleBackToList = () => {
@@ -134,6 +145,8 @@ function App() {
             </div>
             <MotorList
               motors={motors}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
               onSelectMotor={handleSelectMotor}
               onDeleteMotor={handleDeleteMotor}
             />
